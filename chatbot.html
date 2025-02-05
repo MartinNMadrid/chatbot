@@ -1,0 +1,116 @@
+<div class="chat-container">
+  <h3>Chatbot</h3>
+  <div id="chat-box"
+    style="height: 300px; overflow-y: auto; border: 1px solid #34084D; padding: 10px; margin-bottom: 10px; border-radius: 12px; background-color: #fafafa;">
+  </div>
+  <div id="category-selector" class="question-selector"><label
+      for="categories">¿Qué te gustaría saber?</label><select id="categories">
+      <option selected="selected" value="">Selecciona una categoría...</option>
+      <option value="la plataforma">Plataforma</option>
+      <option value="aula virtual">Cursos</option>
+      <option value="perfil">Perfil</option>
+    </select></div>
+  <div id="question-selector" class="question-selector"
+    style="border-radius: 12px; display: none;"><label
+      for="predefined-questions">Elige una pregunta:</label><select
+      id="predefined-questions">
+      <option selected="selected" value="">Selecciona una pregunta...</option>
+    </select></div>
+  <input id="user-input" style="width: 100%; padding: 10px; display: none;"
+    type="text" placeholder="O escribe una pregunta nueva...">
+  <p></p>
+  <div class="button-container"
+    style="display: flex; justify-content: space-between;"><button id="send-btn"
+      style="background-color: #34084d; color: white; border-radius: 12px;">Enviar</button>
+    <button id="clear-btn"
+      style="background-color: #f44336; color: white; border-radius: 12px;">Limpiar</button>
+  </div>
+  <p>
+    <script>
+      const chatBox = document.getElementById('chat-box');
+      const categorySelector = document.getElementById('categories');
+      const questionSelector = document.getElementById('predefined-questions');
+      const userInput = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+      const clearBtn = document.getElementById('clear-btn');
+      const questionSelectorContainer = document.getElementById(
+        'question-selector');
+      const categorySelectorContainer = document.getElementById(
+        'category-selector');
+
+      const respuestasPorCategoria = {
+        "la plataforma": {
+          "¿Cómo recupero mi contraseña?": "Al momento de ingresar su Nombre de usuario y su Contraseña hay un link que dice '¿Olvidó su contraseña?' Haciendo clic en tal enlace, el sistema le pedirá que ingrese su nombre de usuario o bien, su correo electrónico. Si el nombre de usuario o el correo electrónico es válido, el sistema le enviará un email con instrucciones para poder acceder nuevamente al Campus.",
+        },
+        "aula virtual": {
+          "¿Cómo accedo a un aula virtual?": "Si estas en condiciones de acceder a un aula virtual (estar inscripto) podrás ver la misma en la sección 'Mis cursos'",
+          "¿Por qué no veo mi aula virtual en 'Mis cursos'?": "Es posible que aún no se te haya matriculado en dicha aula virtual o bien no tengas permiso para acceder a la misma. Para más información contacta con el equipo de soporte.",
+          "¿Puedo matricularme en un aula virtual?": "No, solo el equipo a cargo puede matricularte en las aulas virtuales. Si consideras que deberías estar en un aula virtual contacta con el equipo de soporte",
+          "¿Por qué no puedo enviar una 'Tarea'?": "Las actividades de entrega de tarea por lo general tienen una 'Fecha de entrega' y además una 'Fecha limite', si ves la actividad pero no puedes realizar el envío, es posible que hayas superado la 'Fecha limite' para la entrega de la misma",
+          "¿Por qué no puedo realizar un 'Cuestionario'?": "Las actividades de 'Cuestionario' tienen varias configuraciones para los intentos. Revisa que te encuentres dentro del plazo establecido para la actividad, si esta no es una 'Actividad grupal' o que no hayas superado los 'Intentos permitidos'",
+          "Tuve un problema cuando estaba realizando una actividad": "Informa de inmediato a tu docente, de ser posible saca captura si ves algún error. Es importante que envíes un correo al equipo de soporte para que te asistan.",
+          "Terminó el cursado del aula virtual y ahora no la veo, ¿por qué?": "Una vez que finaliza el dictado en las aulas virtuales, todos los estudiantes son desmatriculados de las mismas para que se preparen los contenidos para una nueva cohorte.",
+        },
+        "perfil": {
+          "¿Cómo cambio mi foto de perfil?": "Accede a 'Perfil' y luego en 'Editar perfil' para modificar tu foto de perfil.",
+          "¿Puedo modificar información de mi perfil de usuario?": "No podrás modificar información personal como tu 'Nombre', 'Apellido' o 'Nombre de usuario' pero si tu 'Correo electrónico'. Si tu usuario está asociado a un correo de la USP-T (@uspt.edu.ar) no lo modifiques. En caso de que necesites modificar los primeros campos mencionados debes ponerte en contacto con el equipo de soporte.",
+          "¿Cómo modifico mi contraseña?": "Haciendo clic en tu foto de perfil (parte superior de la pantalla) debes dirigirte a 'Preferencias' y allí seleccionará 'Modificar contraseña'.",
+        }
+      };
+
+      categorySelector.addEventListener('change', () => {
+        const category = categorySelector.value;
+        if (category) {
+
+          questionSelector.innerHTML =
+            `<option value="" selected>Selecciona una pregunta...</option>`;
+          Object.keys(respuestasPorCategoria[category]).forEach(
+            question => {
+              const option = document.createElement('option');
+              option.value = question;
+              option.textContent = question;
+              questionSelector.appendChild(option);
+            });
+
+          questionSelectorContainer.style.display = 'block';
+          categorySelectorContainer.style.display = 'none';
+          //userInput.style.display = 'block';
+          chatBox.innerHTML +=
+            `<div class="message bot-message"><b>Chatbot:</b> Claro, ¿Qué necesitas saber sobre ${category}?</div>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      });
+      sendBtn.addEventListener('click', () => {
+        let userMessage = '';
+        if (questionSelector.value) {
+          userMessage = questionSelector.value;
+          questionSelector.value = '';
+        } else {
+          userMessage = userInput.value.trim();
+          if (!userMessage) return;
+          userInput.value = '';
+        }
+
+        chatBox.innerHTML +=
+          `<div class="message user-message" style="text-align: right; color: #34084D"><b>Tú:</b> ${userMessage}</div>`;
+
+        const category = categorySelector.value;
+        const botMessage = respuestasPorCategoria[category] &&
+          respuestasPorCategoria[category][userMessage] ||
+          "Lo siento, no tengo una respuesta para eso.";
+        chatBox.innerHTML +=
+          `<div class="message bot-message"><b>Chatbot:</b> ${botMessage}<p></p></div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+
+      clearBtn.addEventListener('click', () => {
+        chatBox.innerHTML = '';
+        categorySelector.value = '';
+        questionSelector.value = '';
+        categorySelectorContainer.style.display = 'block';
+        questionSelectorContainer.style.display = 'none';
+        userInput.style.display = 'none';
+      });
+    </script>
+  </p>
+</div>
