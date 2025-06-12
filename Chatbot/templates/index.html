@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="../static/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="chatbot" class="chatbox">
+        <div class="chat-header">Asistente Virtual</div>
+        <div class="chat-body" id="chat-body"></div>
+        <div class="chat-footer">
+            <input type="text" id="user-input" placeholder="Escribe tu pregunta..." />
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+    <script>
+        window.onload = function() {
+            appendMessage("¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?", "bot-message");
+        };
+
+        function sendMessage() {
+            const userInput = $("#user-input").val();
+            if (userInput) {
+                appendMessage(userInput, "user");
+
+                $("#user-input").val("");
+
+                $.ajax({
+                    url: "../chatbot_api.php",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ pregunta: userInput }),
+                    success: function(response) {
+                        appendMessage(response.respuesta, "assistant");
+                        if (response.recomendaciones && response.recomendaciones.length > 0) {
+                            response.recomendaciones.forEach(function(rec) {
+                                appendMessage(
+                                    rec,
+                                    "recommendation",
+                                    true
+                                );
+                            });
+                        }
+                    },
+                    error: function() {
+                        appendMessage(
+                            "Ocurrió un error. Por favor, intenta nuevamente.",
+                            "assistant"
+                        );
+                    }
+                });
+            }
+        }
+
+        function appendMessage(message, sender, clickable = false) {
+            let messageClass = sender === "user" ? "user-message" : "assistant-message";
+            if (clickable) messageClass += " clickable-recommendation";
+
+            const messageElement = `<div class="${messageClass}">${message}</div>`;
+            $("#chat-body").append(messageElement);
+            $("#chat-body").scrollTop($("#chat-body")[0].scrollHeight);
+
+            if (clickable) {
+                $(".clickable-recommendation").last().on("click", function () {
+                    $("#user-input").val(message);
+                    sendMessage();
+                });
+            }
+        }
+    </script>
+</body>
+</html>
