@@ -1,0 +1,50 @@
+<div class="chatbot-widget"
+  style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"><button
+    id="chatbot-toggle" class="chatbot-button"
+    style="background-color: #34084d; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;">
+    <i class="fas fa-arrow-up"></i> </button><iframe id="chatbot-iframe"
+    class="chatbot-iframe"
+    style="display: none; width: 100%; height: 400px; border: none; margin: 0; padding: 0; background-color: transparent;"
+    src="http://172.168.11.17/chatbot"></iframe>
+  <p>
+    <script>
+      document.getElementById('chatbot-toggle').addEventListener('click',
+        function() {
+          var iframe = document.getElementById('chatbot-iframe');
+          var button = document.getElementById('chatbot-toggle');
+          if (iframe.style.display === 'none') {
+            iframe.style.display = 'block';
+            button.innerHTML =
+              '<i class="fas fa-arrow-down"></i>'; // Flecha hacia abajo
+          } else {
+            iframe.style.display = 'none';
+            button.innerHTML =
+              '<i class="fas fa-arrow-up"></i>'; // Flecha hacia arriba
+          }
+        });
+      window.addEventListener('message', function(event) {
+
+        // Need to check for safety as we are going to process only our messages
+        // So Check whether event with data(which contains any object) contains our message here its "FrameHeight"
+        if (event.data == "FrameHeight") {
+
+          //event.source contains parent page window object 
+          //which we are going to use to send message back to main page here "abc.com/page"
+
+          //parentSourceWindow = event.source;
+
+          //Calculate the maximum height of the page
+          var body = document.body,
+            html = document.documentElement;
+          var height = Math.max(body.scrollHeight, body.offsetHeight,
+            html.clientHeight, html.scrollHeight, html.offsetHeight);
+
+          // Send height back to parent page "abc.com/page"
+          event.source.postMessage({
+            "FrameHeight": height
+          }, "*");
+        }
+      });
+    </script>
+  </p>
+</div>

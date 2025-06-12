@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Chatbot</title>
+    <link rel="stylesheet" href="/static/stylesAdmin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Administrar Chatbot</h1>
+        
+        <!-- Formulario para agregar/editar preguntas -->
+        <form id="form-admin" method="POST">
+            <label for="pregunta">Pregunta:</label>
+            <input type="text" id="pregunta" name="pregunta" required>
+            
+            <label for="respuesta">Respuesta:</label>
+            <textarea id="respuesta" name="respuesta" required></textarea>
+            
+            <input type="hidden" id="pregunta-original" name="pregunta_original">
+            <input type="hidden" id="accion" name="accion">
+            
+            <button type="button" onclick="submitForm('add')">Agregar</button>
+            <button type="button" onclick="submitForm('edit')">Editar</button>
+        </form>
+        
+        <h2>Preguntas Existentes</h2>
+        <ul id="preguntas-list">
+            {% for pregunta, respuesta in base_conocimiento.items() %}
+                <li>
+                    <strong>{{ pregunta }}</strong>: {{ respuesta }}
+                    <!-- Usamos data-* para pasar la pregunta y la respuesta -->
+                    <button data-pregunta="{{ pregunta | tojson }}" data-respuesta="{{ respuesta | tojson }}" onclick="prepareEdit(this)">Editar</button>
+                    <button data-pregunta="{{ pregunta | tojson }}" onclick="deletePregunta(this)">Eliminar</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <script>
+        // Función para enviar el formulario (agregar o editar)
+        function submitForm(accion) {
+            const formData = new FormData(document.getElementById("form-admin"));
+            formData.append("accion", accion);
+            
+            fetch("/update", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // Recargar la página para reflejar los cambios
+            });
+        }
+
+        // Función para preparar el formulario para editar una pregunta
+        function prepareEdit(button) {
+            // Obtenemos los datos de los atributos data-*
+            const pregunta = button.getAttribute("data-pregunta");
+            const respuesta = button.getAttribute("data-respuesta");
+
+            // Asignamos los valores de pregunta y respuesta al formulario
+            document.getElementById("pregunta").value = pregunta;
+            document.getElementById("respuesta").value = respuesta;
+            document.getElementById("pregunta-original").value = pregunta;
+            document.getElementById("accion").value = "edit"; // Establecemos la acción como "edit"
+        }
+
+        // Función para eliminar una pregunta
+        function deletePregunta(button) {
+            const pregunta = button.getAttribute("data-pregunta");
+
+            const formData = new FormData();
+            formData.append("pregunta", pregunta);
+            formData.append("accion", "delete");
+            
+            fetch("/
